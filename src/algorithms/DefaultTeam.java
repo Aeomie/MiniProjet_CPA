@@ -78,28 +78,35 @@ public class DefaultTeam {
 
 	    return new Tree2D(root, children);
 	}
+	// Anything under 70 or above 155 will make this program loop indefintely
+	// i could add a mechanism to stop it , if distance is over budget and doesnt change in 10 loop
+	//, but i cant open a popUp that says in the window that the parameter value is too low/high.
+	// This approach should require a button in the GUI , that lets you put the distance paramtere between nodes that's needed. and it passes it to the code.
   public Tree2D calculSteinerBudget(ArrayList<Point> points, int edgeThreshold, ArrayList<Point> hitPoints) {
 
     int[][] paths = calculShortestPaths(points, edgeThreshold);
     int budget = 1664;
     
     ArrayList<Point> hitPoints_copy = (ArrayList<Point>)hitPoints.clone();
-    ArrayList<infoPoint> infoPoints = scoring_algorithm(points,hitPoints,paths,100);
+    ArrayList<infoPoint> infoPoints = scoring_algorithm(points,hitPoints,paths,150);
     Collections.sort(infoPoints, (e1,e2) -> Integer.compare(e1.nb_closePoints, e2.nb_closePoints));
     int distance = 10000;
 	Kruskal k = new Kruskal();
 	ArrayList<Edge> mstEdges = new ArrayList<Edge>();
 	Tree2D steinerTree= k.edgesToTree(mstEdges, hitPoints.get(0));
-
+	
+	
 	Tree2D newSteinerTree = Steiner(paths, steinerTree, points);
+	Point main_point = hitPoints.get(0);
 	
 	int index = 0;
     while(distance > budget) {
     	System.out.println("distance = " + distance);
     	Point removePoint = infoPoints.get(index).root;
+    	if(removePoint.equals(main_point)) continue;
     	hitPoints_copy.remove(removePoint);
     	mstEdges = k.kruskal(hitPoints_copy);
-    	steinerTree= k.edgesToTree(mstEdges, hitPoints.get(0));
+    	steinerTree= k.edgesToTree(mstEdges, main_point);
 
     	newSteinerTree = Steiner(paths, steinerTree, points);
     	distance = (int)distanceCalculator(newSteinerTree);
