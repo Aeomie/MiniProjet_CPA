@@ -54,7 +54,9 @@ public class DefaultTeam {
 
 		return newSteinerTree;
   }
-  
+	/**
+	Functionality : Builds the tree following the shortestPaths ( paths )
+	 */
 	private Tree2D Steiner(int[][] paths, Tree2D steinerTree, ArrayList<Point> points) {
 	    Point root = steinerTree.getRoot();
 	    int rootIndex = points.indexOf(root);
@@ -78,30 +80,47 @@ public class DefaultTeam {
 
 	    return new Tree2D(root, children);
 	}
-	// Anything under 70 or above 155 will make this program loop indefintely
-	// i could add a mechanism to stop it , if distance is over budget and doesnt change in 10 loop
-	//, but i cant open a popUp that says in the window that the parameter value is too low/high.
-	// This approach should require a button in the GUI , that lets you put the distance paramtere between nodes that's needed. and it passes it to the code.
+	
+	// INFORMATION
+	/**
+	 * Anything under 70 or above 155 will make this program loop indefintely
+	 * i could add a mechanism to stop it , if distance is over budget and doesnt change in 10 loop
+	 *but i cant open a popUp that says in the window that the parameter value is too low/high.
+	 *This approach should require a button in the GUI , that lets you put the distance parametere between nodes that's needed. and it passes it to the code.
+	 */
+	
+	// How it Works & Why this way
+	/**
+		I was inspirted by an Ai/ML Approach where we have some sorts of Clusters.
+		
+		We define the shortestPaths that are then used in our scoring algorithm to produce 
+		hitPoints paths to other hitPoints with the number of hitpoints close to them.
+		
+		We loop aslong as the distance is higher than the budget , and remove the points that have the least points close to them
+	 */
   public Tree2D calculSteinerBudget(ArrayList<Point> points, int edgeThreshold, ArrayList<Point> hitPoints) {
 
     int[][] paths = calculShortestPaths(points, edgeThreshold);
+    
+    int DistanceBetweenNodes = 150;
     int budget = 1664;
+    int distance = 100000; // instead of Initializing it as Integer MAX Value , i initialized it as a high value for the graph
     
     ArrayList<Point> hitPoints_copy = (ArrayList<Point>)hitPoints.clone();
-    ArrayList<infoPoint> infoPoints = scoring_algorithm(points,hitPoints,paths,150);
+    
+    ArrayList<infoPoint> infoPoints = scoring_algorithm(points,hitPoints,paths,DistanceBetweenNodes);
     Collections.sort(infoPoints, (e1,e2) -> Integer.compare(e1.nb_closePoints, e2.nb_closePoints));
-    int distance = 10000;
+   
 	Kruskal k = new Kruskal();
 	ArrayList<Edge> mstEdges = new ArrayList<Edge>();
-	Tree2D steinerTree= k.edgesToTree(mstEdges, hitPoints.get(0));
+	Tree2D steinerTree= new Tree2D(new Point(0,0), new ArrayList<Tree2D>());
 	
-	
-	Tree2D newSteinerTree = Steiner(paths, steinerTree, points);
+	Tree2D newSteinerTree = new Tree2D(new Point(0,0), new ArrayList<Tree2D>());
 	Point main_point = hitPoints.get(0);
 	
 	int index = 0;
     while(distance > budget) {
-    	System.out.println("distance = " + distance);
+    	//System.out.println("distance = " + distance);
     	Point removePoint = infoPoints.get(index).root;
     	if(removePoint.equals(main_point)) continue;
     	hitPoints_copy.remove(removePoint);
@@ -113,11 +132,15 @@ public class DefaultTeam {
     	index++;
     }
 
-	System.out.println("distance c: " + (int)distanceCalculator(newSteinerTree));
+	//System.out.println("distance c: " + (int)distanceCalculator(newSteinerTree));
 	return newSteinerTree;
   }
   
   
+	/**
+	Functionality : Calculates the distance of all the tree
+	Use : Helps on looping while over the budget.
+	 */
   public double distanceCalculator(Tree2D tree) {
 	  double distance = 0;
 	  Point root = tree.getRoot();
@@ -127,6 +150,12 @@ public class DefaultTeam {
 	  }
 	  return distance;
   }
+	/**
+	Functionality : Calculates close hitPoints for each hitPoints while respecting the threshold
+					Also initialises the path to that hitPoint
+					
+	Use : Helps us create a sort of cluster that helps us determine if that point is worth taking or not.
+	 */
   public ArrayList<infoPoint> scoring_algorithm(ArrayList<Point> points, ArrayList<Point> hitPoints, int[][] shortestPaths, int threshold) {
 	  ArrayList<infoPoint> infoPoints = new ArrayList<infoPoint>();
 	  
@@ -149,9 +178,14 @@ public class DefaultTeam {
 	  
 	  return infoPoints;
   }
+	/**
+	Functionality : gets the Path from Point  A to Point B , while following the intermediary points in paths.
+					
+	Use : We need it for our scoring_algorithm
+	 */
   public PointPath getPath(ArrayList<Point> points, int[][] paths ,Point start, Point end) {
 		Point startPoint = start;
-    	Point nextPoint = new Point(-1,-1); // point that cant exist
+    	Point nextPoint = new Point(-1,-1); // point that cant exist in our plan
     	Point endPoint = end;
     	int end_point_Index = points.indexOf(end);
     	double distance = 0;
@@ -170,7 +204,9 @@ public class DefaultTeam {
     	}
     	return new PointPath(start, end, path, distance);
   }
-  
+	/**
+	Functionality : Class that holds distance + paths.
+	*/
   class PointPath{
 	  private Point startPoint;
 	  private Point endPoint;
@@ -195,23 +231,10 @@ public class DefaultTeam {
 		  return endPoint;
 	  }
   }
-  
-  class MapHolder{
-	  private HashMap<Point, ArrayList<PointPath>> mapPaths;
-	  private HashMap<Point , Integer> mapClose;
-	  MapHolder(HashMap<Point, ArrayList<PointPath>> mapPaths, HashMap<Point , Integer> mapClose){
-		  this.mapPaths = mapPaths;
-		  this.mapClose = mapClose;
-	  }
-	  
-	  public HashMap<Point, ArrayList<PointPath>> getMapPaths() {
-		  return mapPaths;
-	  }
-	  public HashMap<Point , Integer> getMapClose(){
-		  return mapClose;
-	  }
-  }
-  
+	/**
+	Functionality : Holder class
+	Use: Holds data for our Hitpoint , with paths to other points and number of points that are close.
+	*/
   class infoPoint{
 	  private Point root;
 	  private ArrayList<PointPath> paths;

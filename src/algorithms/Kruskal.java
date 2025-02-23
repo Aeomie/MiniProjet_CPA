@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class Kruskal {
+	/**
+		Traverse through the tree while building the MST Tree by comparing the points and their presence in the parent Tree.
+	 */
 	  public ArrayList<Edge> kruskal(ArrayList<Point> points) {
 		  
 		  ArrayList<Edge> edges = new ArrayList<Edge>();
@@ -52,6 +55,9 @@ public class Kruskal {
 
 	      return mstEdges;
 	  }
+		/**
+		Function that helps us find the root of a point.
+		 */
 	  private Point find(Map<Point, Point> parent, Point p) {
 	      Point root = p;
 	      while (!parent.get(root).equals(root)) {
@@ -76,6 +82,9 @@ public class Kruskal {
 	      }
 	  }
 
+	/**
+		edgesToTree of TME4
+	*/
 	  public Tree2D edgesToTree(ArrayList<Edge> edges, Point root) {
 		    ArrayList<Edge> remainder = new ArrayList<Edge>();
 		    ArrayList<Point> subTreeRoots = new ArrayList<Point>();
@@ -98,6 +107,9 @@ public class Kruskal {
 
 		    return new Tree2D(root, subTrees);
 		  }
+	/**
+		contains of TME4
+	*/
 	  private boolean contains(ArrayList<Edge> edges,Point p,Point q){
 		    for (Edge e:edges){
 		      if (e.p.equals(p) && e.q.equals(q) ||
